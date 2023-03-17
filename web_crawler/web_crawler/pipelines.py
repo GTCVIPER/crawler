@@ -5,13 +5,13 @@
 
 
 # useful for handling different item types with a single interface
-from itemadapter import ItemAdapter
-from web_crawler.spiders.gtc_spider import GtcSpiderSpider
 from web_crawler.items import *
 from urllib.parse import unquote
 import os
+import re
+from proj_path import path_
 
-root_path = os.getcwd() + '/results/'
+root_path = path_ + '/uploads'
 
 
 class WebCrawlerPipeline:
@@ -33,7 +33,7 @@ class WebCrawlerPipeline:
                 ext_name = 'js'
             filename = filename + '.' + ext_name
 
-        print(filename)
+        # print(filename)
 
         if not os.path.exists(filename):
             with open(filename, 'wb') as f:
@@ -41,7 +41,16 @@ class WebCrawlerPipeline:
                 pass
 
     def process_item(self, item, spider):
-        os_path = root_path + GtcSpiderSpider.start_domain
+        global root_path
+        # print(spider.start_domain, '==============>')
+        # root_path = root_path + '/' + spider.root_u
+        ip_match = re.compile(r'^((25[0-5]|2[0-4]\d|[01]?\d\d?)\.){3}(25[0-5]|2[0-4]\d|[01]?\d\d?)$')
+        if not spider.root_u in root_path:
+            root_path = root_path + '/' + spider.root_u
+        if ip_match.match(spider.start_domain):
+            os_path = root_path
+        else:
+            os_path = root_path + '/' + spider.start_domain
         if not os.path.exists(os_path):
             os.makedirs(os_path)
 

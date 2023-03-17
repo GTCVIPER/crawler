@@ -8,6 +8,8 @@ from scrapy import signals
 # useful for handling different item types with a single interface
 from itemadapter import is_item, ItemAdapter
 from fake_useragent import UserAgent
+from scrapy.exceptions import NotConfigured
+import threading
 
 
 class WebCrawlerSpiderMiddleware:
@@ -123,3 +125,38 @@ class RandomUserAgentMiddlware(object):
 
         print(get_ua())
         request.headers.setdefault('User-Agent', get_ua())
+
+
+class MultiThreadedSpiderMiddleware:
+    def __init__(self, settings):
+        self.max_threads = settings.getint('MAX_THREADS', 10)
+        self.semaphore = threading.BoundedSemaphore(self.max_threads)
+
+    @classmethod
+    def from_crawler(cls, crawler):
+        if not crawler.settings.getbool('MY_EXTENSION_ENABLED'):
+            raise NotConfigured
+        ext = cls(crawler.settings)
+        crawler.signals.connect(ext.spider_opened, signal=signals.spider_opened)
+        crawler.signals.connect(ext.spider_closed, signal=signals.spider_closed)
+        return ext
+
+    def process_request(self, request, spider):
+        self.semaphore.acquire()
+        t = threading.Thread(target=self._process_request, args=(request, spider))
+        t.start()
+
+    def _process_request(self, request, spider):
+        try:
+            response = spider.fetch(request)
+            spider.handle_response(request, response)
+        except Exception as e:
+            spider.handle_exception(request, e)
+        finally:
+            self.semaphore.release()
+
+    def spider_opened(self, spider):
+        pass
+
+    def spider_closed(self, spider):
+        pass
