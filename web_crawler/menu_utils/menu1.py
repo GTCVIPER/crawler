@@ -3,10 +3,10 @@ import sys
 from terminal_layout import *
 from terminal_layout.extensions.input import *
 import re
-from scrapy.cmdline import execute
 
 sys.path.append('/pythonProject3/web_crawler/')
 from proj_path import path_
+from utils import *
 
 title_style = {
     'width': 20,
@@ -45,12 +45,12 @@ ctl = LayoutCtl.quick(TableLayout,
                           # row_5:table-name
                           [TextView('', '    '),
                            TextView('', 'URL: ', width=7, gravity=Gravity.right, **table_color),
-                           TextView('URL', '', width=10, gravity=Gravity.left, **table_color),
+                           TextView('URL', '', width=50, gravity=Gravity.left, **table_color),
                            ],
                           # row_6:table-age
                           [TextView('', '    '),
                            TextView('', 'PATH: ', width=7, gravity=Gravity.right, **table_color),
-                           TextView('PATH', '', width=10, gravity=Gravity.left, **table_color),
+                           TextView('PATH', '', width=50, gravity=Gravity.left, **table_color),
                            ],
                           # row_7:line
                           [
@@ -122,10 +122,18 @@ kl = KeyListener()
 pattern_1 = r'(&&|;|\||\|\|)'
 pattern_2 = r'(&&|;|\||\|\||&)'
 
-
+# data["URL"] == '' and data["PATH"] == '':
+# print('\n', Fore.red, '[-] 请输入目标URL和包名！', Fore.reset, '\n')
 @kl.bind_key(Key.ENTER)
 def _(kl, e):
-    if not re.search(pattern_1, data['URL']) and not re.search(pattern_2, data["PATH"]):
+    if not data["URL"]  or not data["PATH"] or not is_url(data["URL"]):
+        # print(data["URL"],data["PATH"] )
+        print('\n', Fore.red, '[-] 请输入 正确的 目标URL和包名！', Fore.reset, '\n')
+    elif not re.search(pattern_1, data['URL']) and not re.search(pattern_2, data["PATH"]):
+        # print(path_)
+
+        if not os.path.exists(path_ + '/logs'):
+            os.makedirs(path_ + '/logs')
 
         if sys.platform == 'win32':
             os.system(
@@ -133,11 +141,8 @@ def _(kl, e):
         else:
             os.system(
                 f'scrapy crawl gtc_spider -a url={data["URL"]} -a path={data["PATH"]} > {path_}/logs/{data["PATH"]}.log &')
-        # execute(
-        #     ['start', '/B', 'scrapy', 'crawl', 'gtc_spider', '-a', f'url={data["URL"]}', '-a', f'path={data["PATH"]}',
-        #      '>', path_ + f'/logs/{data["PATH"]}.log'])
-        print('\n', Fore.blue, '[+] Crawling ', data['URL'], '......', Fore.reset, '\n')
-        # os.system(f'scrapy crawl gtc_spider -a url={data["URL"]} -a path={data["PATH"]}')
+            print('\n', Fore.blue, '[+] Crawling ', data['URL'], '......', Fore.reset, '\n')
+
     else:
         print('\n', Fore.red, '[-] 禁止输入违规字符串！', Fore.reset, '\n')
     # os.system(f'whoami')
@@ -146,8 +151,6 @@ def _(kl, e):
 
 @kl.bind_key(Key.BACKSPACE)
 def _(kl, e):
-    # execute(['python', 'menu1.py'])
-    # os.system('python menu1.py')
     kl.stop()
 
 

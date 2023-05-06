@@ -9,6 +9,11 @@ import re
 
 crawled_urls = set()  # 爬取过的 URL
 
+email_regex = r'mailto:[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,}'
+from proj_path import path_
+
+root_path = path_ + '/uploads'
+
 
 class GtcSpiderSpider(scrapy.Spider):
     def __init__(self, *args, **kwargs):
@@ -28,6 +33,10 @@ class GtcSpiderSpider(scrapy.Spider):
         ]
         self.start_urls = urls
         domain_url = urlparse(urls[0]).hostname
+        result = re.search(email_regex, urls[0])
+        if result:
+            print(result)
+            email_handler(root_path + '/' + self.root_u, result.group().split(':')[-1])
 
         # 匹配是否为 IP 地址
         ip_match = re.compile(r'^((25[0-5]|2[0-4]\d|[01]?\d\d?)\.){3}(25[0-5]|2[0-4]\d|[01]?\d\d?)$')
@@ -41,8 +50,20 @@ class GtcSpiderSpider(scrapy.Spider):
             yield scrapy.Request(url=url, callback=self.parse)
 
     def parse(self, response: Response, **kwargs):
-        # print(self.allowed_domains)
+        # print(response.url)
+        # result = re.search(email_regex, response.url)
+        # print('result： ------>',result)
+        # if result:
+        #     print(result)
+        #     email_handler(root_path + '/' + self.root_u, result.group().split(':')[-1])
         if response.status == 200:
+            if response.url.rsplit('.')[-1] not in ['png', 'jpg', 'jpeg', 'gif', 'pdf', 'doc', 'ico', 'docx', 'ppt',
+                                                    'pptx']:
+                url_t = re.findall(r'/[a-zA-Z0-9/?=&.-]+', response.text)  # 当前网页的所有可能的链接
+                for u in set(url_t):
+                    if self.start_domain in u:
+                        # print(u)
+                        add_domain(self.allowed_domains, u)
             resp_url = response.url
             sub_domain = urlparse(resp_url).hostname
             # print(type(sub_domain))
@@ -55,10 +76,12 @@ class GtcSpiderSpider(scrapy.Spider):
             file_name = 'index' if url_path[url_path.rfind('/') + 1:] == '' else url_path[url_path.rfind('/') + 1:]
 
             for key, value in url_params.items():
-                if key in ['page', 'file', 'id', 'cat', 'product', 'category', 'blog', 'act', 'action', 'tags']:
+                if key in ['page', 'file', 'id', 'cat', 'product', 'category', 'blog', 'act', 'action', 'tags',
+                           'page_id', 'p']:
                     if file_name == 'index':
                         url__path += key + '/'
                     else:
+                        url__path = url__path.replace('.', '_')
                         url__path += '/' + key + '/'
                     file_name = value
 
@@ -77,42 +100,55 @@ class GtcSpiderSpider(scrapy.Spider):
             # print(html)
             yield html
 
-            url_t = re.findall(r'/[a-zA-Z0-9/?=&.-]+', response.text)  # 当前网页的所有可能的链接
-            for u in set(url_t):
-                if self.start_domain in u and u.rsplit('.')[-1] not in ['png', 'jpg', 'jpeg', 'gif', 'pdf', 'doc',
-                                                                        'ico', 'docx', 'ppt', 'pptx']:
-                    # print(u)
-                    add_domain(self.allowed_domains, u)
+            # print(response.url)
 
-            link_urls = response.css('link::attr("href")').getall()
+            if response.url.rsplit('.')[-1] not in ['png', 'jpg', 'jpeg', 'gif', 'pdf', 'doc', 'ico', 'docx', 'ppt',
+                                                    'pptx']:
+                # url_t = re.findall(r'/[a-zA-Z0-9/?=&.-]+', response.text)  # 当前网页的所有可能的链接
+                # for u in set(url_t):
+                #     if self.start_domain in u:
+                #         # print(u)
+                #         add_domain(self.allowed_domains, u)
+                link_urls = response.css('link::attr("href")').getall()
 
-            for l in url_handler(url_list=link_urls, sub_protocol=sub_protocol, sub_domain=urlparse(resp_url).netloc,
-                                 start_domain=self.start_domain, crawled_urls=crawled_urls, resp_url=url_path_):
-                yield Request(l, priority=300, callback=self.parse_link)
+                for l in url_handler(url_list=link_urls, sub_protocol=sub_protocol,
+                                     sub_domain=urlparse(resp_url).netloc,
+                                     start_domain=self.start_domain, crawled_urls=crawled_urls, resp_url=url_path_,
+                                     root_u=self.root_u):
+                    yield Request(l, priority=300, callback=self.parse_link)
 
-            pic_urls = response.css('img::attr("src")').getall()
+                pic_urls = response.css('img::attr("src")').getall()
 
-            for p in url_handler(url_list=pic_urls, sub_protocol=sub_protocol, sub_domain=urlparse(resp_url).netloc,
-                                 start_domain=self.start_domain, crawled_urls=crawled_urls, resp_url=url_path_):
-                yield Request(p, priority=100, callback=self.parse_pic)
+                for p in url_handler(url_list=pic_urls, sub_protocol=sub_protocol, sub_domain=urlparse(resp_url).netloc,
+                                     start_domain=self.start_domain, crawled_urls=crawled_urls, resp_url=url_path_,
+                                     root_u=self.root_u):
+                    yield Request(p, priority=100, callback=self.parse_pic)
 
-            next_urls = response.css('a::attr("href")').getall()
-            # print(next_urls)
+                next_urls = response.css('a::attr("href")').getall()
+                # print(next_urls)
 
-            for i in url_handler(url_list=next_urls, sub_protocol=sub_protocol, sub_domain=urlparse(resp_url).netloc,
-                                 start_domain=self.start_domain, crawled_urls=crawled_urls, resp_url=url_path_):
-                yield Request(i, priority=2)
+                for i in url_handler(url_list=next_urls, sub_protocol=sub_protocol,
+                                     sub_domain=urlparse(resp_url).netloc,
+                                     start_domain=self.start_domain, crawled_urls=crawled_urls, resp_url=url_path_,
+                                     root_u=self.root_u):
+                    yield Request(i, priority=6)
 
-            script_urls = response.css('script::attr("src")').getall()
+                script_urls = response.css('script::attr("src")').getall()
 
-            for s in url_handler(url_list=script_urls, sub_protocol=sub_protocol, sub_domain=urlparse(resp_url).netloc,
-                                 start_domain=self.start_domain, crawled_urls=crawled_urls, resp_url=url_path_):
-                yield Request(s, priority=200, callback=self.parse_script)
+                for s in url_handler(url_list=script_urls, sub_protocol=sub_protocol,
+                                     sub_domain=urlparse(resp_url).netloc,
+                                     start_domain=self.start_domain, crawled_urls=crawled_urls, resp_url=url_path_,
+                                     root_u=self.root_u):
+                    yield Request(s, priority=200, callback=self.parse_script)
 
-        # print(len(crawled_urls))
         pass
 
     def parse_link(self, response: Response, **kwargs):
+        # result = re.search(email_regex, response.url)
+        # print('result： ------>', result)
+        # if result:
+        #     print(result)
+        #     email_handler(root_path + '/' + self.root_u, result.group().split(':')[-1])
         if response.status == 200:
             sub_domain = urlparse(response.url).hostname
             url_path = urlparse(response.url).path
@@ -132,6 +168,11 @@ class GtcSpiderSpider(scrapy.Spider):
         pass
 
     def parse_pic(self, response: Response, **kwargs):
+        # result = re.search(email_regex, response.url)
+        # print('result： ------>', result)
+        # if result:
+        #     print(result)
+        #     email_handler(root_path + '/' + self.root_u, result.group().split(':')[-1])
         if response.status == 200:
             sub_domain = urlparse(response.url).hostname
             url_path = urlparse(response.url).path
@@ -151,6 +192,11 @@ class GtcSpiderSpider(scrapy.Spider):
         pass
 
     def parse_script(self, response: Response, **kwargs):
+        # result = re.search(email_regex, response.url)
+        # print('result： ------>', result)
+        # if result:
+        #     print(result)
+        #     email_handler(root_path + '/' + self.root_u, result.group().split(':')[-1])
         if response.status == 200:
             sub_domain = urlparse(response.url).hostname
             url_path = urlparse(response.url).path

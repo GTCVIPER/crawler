@@ -1,30 +1,13 @@
 from terminal_layout import *
-
-key_listener = KeyListener()
-
-
-@key_listener.bind_key(Key.UP)
-def _(kl, e):
-    print(e)
+from terminal_layout.extensions.input import *
 
 
-@key_listener.bind_key(Key.DOWN, 'a', '[0-9]')
-def _(kl, e):
-    if e.key == 'a':
-        print('Press a')
-    elif e.key == Key.DOWN:
-        print('Press DOWN')
-    elif e.key == '0':
-        print('Press 0')
-    else:
-        print('Press 1-9')
-
-
-def stop(kl, e):
-    print('Press', e.key, 'stop!')
-    kl.stop()
-
-
-key_listener.bind_key(Key.ESC, Key.F1, stop, decorator=False)
-
-key_listener.listen(stop_key=[Key.CTRL_A])
+def input_dest():
+    ctl = LayoutCtl.quick(TableRow,
+                          [TextView('', '输入备份目标地址的绝对路径: (请将路径用/分割) ', fore=Fore.magenta),
+                           TextView('input', '', width=11, fore=Fore.blue)])
+    # auto_re_draw=False 这样就不会重新加载字幕了
+    ctl.draw(auto_re_draw=False)
+    ok, s = InputEx(ctl).get_input('input')
+    if ok:
+        return s

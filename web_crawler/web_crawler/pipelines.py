@@ -24,6 +24,7 @@ class WebCrawlerPipeline:
         sub_path = base_path + '/' + path
         filename = sub_path + '/' + filename
         if not os.path.exists(sub_path):
+
             os.makedirs(sub_path)
 
         if len(unquote(item['filename']).split('.')) == 1:

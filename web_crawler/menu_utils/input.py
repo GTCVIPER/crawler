@@ -30,7 +30,8 @@ def input_():
                 # print(pat[pat.find(s):-1])
                 show_list.append({'show_path': show_pat, 'true_path': pat})
         if not is_matched:
-            print('未搜到结果！！！')
+            # print('未搜到结果！！！')
+            print('\n', Fore.red, '[-] 未搜到结果！！！ ', Fore.reset, '\n')
         else:
             # print(input_1())
             display_list(show_list, input_1())
@@ -40,7 +41,7 @@ def input_():
 
 def input_1():
     ctl = LayoutCtl.quick(TableRow,
-                          [TextView('', '输入浏览器的绝对路径路径: (请将路径用/分割) ', fore=Fore.magenta),
+                          [TextView('', '输入浏览器的绝对路径: (请将路径用/分割) ', fore=Fore.magenta),
                            TextView('input', '', width=11, fore=Fore.blue)])
     # auto_re_draw=False 这样就不会重新加载字幕了
     ctl.draw(auto_re_draw=False)
