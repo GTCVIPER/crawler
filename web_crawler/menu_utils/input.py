@@ -6,7 +6,7 @@ from filesearch import get_file_paths
 from menu2 import display_list
 
 sys.path.append('/pythonProject3/web_crawler/')
-from proj_path import path_
+from proj_path import *
 
 
 def input_():

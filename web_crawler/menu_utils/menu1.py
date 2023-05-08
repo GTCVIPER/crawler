@@ -3,9 +3,10 @@ import sys
 from terminal_layout import *
 from terminal_layout.extensions.input import *
 import re
-
+# C:/Program Files (x86)/Microsoft/Edge/Application/msedge.exe
+# C:/Program Files/Google/Chrome/Application/chrome.exe
 sys.path.append('/pythonProject3/web_crawler/')
-from proj_path import path_
+from proj_path import *
 from utils import *
 
 title_style = {
@@ -141,7 +142,7 @@ def _(kl, e):
         else:
             os.system(
                 f'scrapy crawl gtc_spider -a url={data["URL"]} -a path={data["PATH"]} > {path_}/logs/{data["PATH"]}.log &')
-            print('\n', Fore.blue, '[+] Crawling ', data['URL'], '......', Fore.reset, '\n')
+        print('\n', Fore.blue, '[+] Crawling ', data['URL'], '......', Fore.reset, '\n')
 
     else:
         print('\n', Fore.red, '[-] 禁止输入违规字符串！', Fore.reset, '\n')

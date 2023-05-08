@@ -10,6 +10,8 @@ import re
 crawled_urls = set()  # 爬取过的 URL
 
 email_regex = r'mailto:[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,}'
+
+
 from proj_path import path_
 
 root_path = path_ + '/uploads'
@@ -50,6 +52,7 @@ class GtcSpiderSpider(scrapy.Spider):
             yield scrapy.Request(url=url, callback=self.parse)
 
     def parse(self, response: Response, **kwargs):
+        # response = response.replace(encoding='utf-8')
         # print(response.url)
         # result = re.search(email_regex, response.url)
         # print('result： ------>',result)
@@ -57,7 +60,7 @@ class GtcSpiderSpider(scrapy.Spider):
         #     print(result)
         #     email_handler(root_path + '/' + self.root_u, result.group().split(':')[-1])
         if response.status == 200:
-            if response.url.rsplit('.')[-1] not in ['png', 'jpg', 'jpeg', 'gif', 'pdf', 'doc', 'ico', 'docx', 'ppt',
+            if urlparse(response.url).path.rsplit('.')[-1] not in ['png', 'jpg', 'jpeg', 'gif', 'pdf', 'doc', 'ico', 'docx', 'ppt',
                                                     'pptx']:
                 url_t = re.findall(r'/[a-zA-Z0-9/?=&.-]+', response.text)  # 当前网页的所有可能的链接
                 for u in set(url_t):
@@ -91,14 +94,13 @@ class GtcSpiderSpider(scrapy.Spider):
             url_path_ = urlparse(resp_url).netloc + url_path[0:url_path.rfind('/')]
             # print(url_path_)
 
+            # print(html)
             html = htmlItem()
+            # yield html
             html['filename'] = file_name
             html['os_path'] = ''.join(url_paths)
             html['content'] = response.body
             html['content_type'] = response.headers['content-type']
-
-            # print(html)
-            yield html
 
             # print(response.url)
 
@@ -141,9 +143,23 @@ class GtcSpiderSpider(scrapy.Spider):
                                      root_u=self.root_u):
                     yield Request(s, priority=200, callback=self.parse_script)
 
+
+                html_text = response.text
+
+                # 修改标签路径为本地路径
+                html_text = replace_TEXT(html_text, url_path_, self.start_domain, sub_domain, self.root_u)
+
+                html['filename'] = file_name
+                html['os_path'] = ''.join(url_paths)
+                html['content'] = html_text.encode('utf-8')
+                html['content_type'] = response.headers['content-type']
+
+            yield html
+
         pass
 
     def parse_link(self, response: Response, **kwargs):
+        # response = response.replace(encoding='utf-8')
         # result = re.search(email_regex, response.url)
         # print('result： ------>', result)
         # if result:
@@ -168,6 +184,7 @@ class GtcSpiderSpider(scrapy.Spider):
         pass
 
     def parse_pic(self, response: Response, **kwargs):
+        # response = response.replace(encoding='utf-8')
         # result = re.search(email_regex, response.url)
         # print('result： ------>', result)
         # if result:
@@ -192,6 +209,7 @@ class GtcSpiderSpider(scrapy.Spider):
         pass
 
     def parse_script(self, response: Response, **kwargs):
+        # response = response.replace(encoding='utf-8')
         # result = re.search(email_regex, response.url)
         # print('result： ------>', result)
         # if result:

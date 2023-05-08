@@ -8,13 +8,13 @@ import shutil
 from menu3 import input_dest
 
 sys.path.append('/pythonProject3/web_crawler/')
-from proj_path import path_
+from proj_path import *
 from utils import *
 
 
 
 
-
+# C:/Users/52252/Desktop
 def display_content(true_path, browser_path):
     c = Choice('资源展示',
                ['网页展示', '源码展示', '文件批注', '查看批注', '备份批注', '退出'],
@@ -49,7 +49,7 @@ def display_content(true_path, browser_path):
             display_content(true_path, browser_path)
         elif value == '查看批注':
             if os.path.isfile(file_p):
-                stdio_display(file_p)
+                comm_display(file_p)
             else:
                 print('\n', Fore.red, '[-] 该文件目前还没有批注！ ', Fore.reset, '\n')
             display_content(true_path, browser_path)
@@ -76,7 +76,10 @@ def display_list(show_list, browser_path):
 
         # 列表推导式
         # print([x['true_path'] for x in show_list if x['show_path'] == value][0])
-        display_content([x['true_path'] for x in show_list if x['show_path'] == value][0], browser_path)
+        true_path = [x['true_path'] for x in show_list if x['show_path'] == value][0]
+
+        # charset = [x['charset'] for x in files_dists if x['file'] == true_path][0]
+        display_content(true_path, browser_path)
 
 
 def web_display(true_path, browser_path):
@@ -93,11 +96,16 @@ def web_display(true_path, browser_path):
 def stdio_display(true_path):
     if true_path.rsplit('.')[-1] not in ['png', 'jpg', 'jpeg', 'gif', 'pdf', 'doc', 'ico', 'docx', 'ppt',
                                          'pptx']:
-        with open(true_path, 'r', encoding='UTF-8') as f:
+        with open(true_path, 'r', encoding='utf-8') as f:
             print(f.read())
     else:
         with open(true_path, 'rb') as f:
             print(f.read())
+
+def comm_display(true_path):
+    with open(true_path, 'r') as f:
+        print(f.read())
+
 
 
 def write_comment(origin_name, file_name, true_path, text):

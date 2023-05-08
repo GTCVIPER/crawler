@@ -9,10 +9,9 @@ from web_crawler.items import *
 from urllib.parse import unquote
 import os
 import re
-from proj_path import path_
+from proj_path import *
 
 root_path = path_ + '/uploads'
-
 
 class WebCrawlerPipeline:
 
@@ -20,6 +19,7 @@ class WebCrawlerPipeline:
         filename = unquote(item['filename'])
         path = unquote(item['os_path'])
         content_type = item['content_type'].decode()
+        # charset_ = 'utf8' if '=' not in content_type else content_type.split('=')[1]
         cont = item['content']
         sub_path = base_path + '/' + path
         filename = sub_path + '/' + filename
@@ -36,6 +36,7 @@ class WebCrawlerPipeline:
 
         # print(filename)
 
+        # files_dists.append({'file': filename, 'charset': charset_})
         if not os.path.exists(filename):
             with open(filename, 'wb') as f:
                 f.write(cont)
