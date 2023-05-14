@@ -2,7 +2,7 @@ import os.path
 from urllib.parse import urlparse
 import time
 from datetime import datetime
-
+import tldextract
 from urllib.parse import parse_qsl
 import re
 
@@ -63,6 +63,12 @@ def replace_TEXT(texts, url_path_, start_domain, sub_domain, root_u):
 
 
 def overwriteURL(url, url_path_, start_domain, sub_domain, root_u):
+
+    domain_str = tldextract.extract(url).registered_domain
+    if 'javascript:' in url:
+        return url
+    elif domain_str != '' and start_domain !=  domain_str:
+        return url
     if '#' in url:
         url = url.rsplit('#')[0]
     if ';' in url:
@@ -89,11 +95,13 @@ def overwriteURL(url, url_path_, start_domain, sub_domain, root_u):
             url = url.replace('//', '/')
         elif not url.startswith('/'):
             url = '/' + url
-        url = root_path + '/' + root_u + '/'  + start_domain + url
+        url = root_path + '/' + root_u + '/' + start_domain + url
 
     url_params = dict(parse_qsl(urlparse(url).query))
-    if len(url_params) != 0:
+    if '?' in url:
         url = url.rsplit('?')[0]
+    if len(url_params) != 0:
+        # url = url.rsplit('?')[0]
         # if not url.endswith('/'):
         #     url += '/'
         path_str_ = url.split(start_domain)[-1]
@@ -105,7 +113,9 @@ def overwriteURL(url, url_path_, start_domain, sub_domain, root_u):
                 if '.' in path_str_:
                     path_str_ = path_str_.replace('.', '_')
                     url = url.split(url.split(start_domain)[-1])[0] + path_str_
-                url += '/' + key + '/' + value + '.html'
+                    url += '/' + key + '/' + value + '.html'
+                else:
+                    url += key + '/' + value + '.html'
 
     path_str = url.split(start_domain)[-1]
     if '.' not in path_str:
@@ -156,7 +166,6 @@ def url_handler(url_list, sub_protocol, sub_domain, start_domain, crawled_urls, 
 
 
 def email_handler(p, emails):
-
     if not os.path.exists(p):
         os.makedirs(p)
     file = os.path.join(p, 'email.txt')

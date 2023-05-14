@@ -6,6 +6,7 @@ from urllib.parse import urlparse
 from urllib.parse import parse_qsl
 from utils import *
 import re
+import tldextract
 
 crawled_urls = set()  # 爬取过的 URL
 
@@ -46,7 +47,8 @@ class GtcSpiderSpider(scrapy.Spider):
         if ip_match.match(domain_url):
             self.start_domain = domain_url
         else:
-            self.start_domain = '.'.join(urlparse(urls[0]).hostname.split('.')[1:])
+            self.start_domain = tldextract.extract(urls[0]).registered_domain
+            # self.start_domain = '.'.join(urlparse(urls[0]).hostname.split('.')[1:])
         # self.start_domain = '.'.join(urlparse(urls[0]).netloc.split('.')[1:])
         for url in urls:
             yield scrapy.Request(url=url, callback=self.parse)
@@ -61,7 +63,7 @@ class GtcSpiderSpider(scrapy.Spider):
         #     email_handler(root_path + '/' + self.root_u, result.group().split(':')[-1])
         if response.status == 200:
             if urlparse(response.url).path.rsplit('.')[-1] not in ['png', 'jpg', 'jpeg', 'gif', 'pdf', 'doc', 'ico', 'docx', 'ppt',
-                                                    'pptx']:
+                                                    'pptx', 'zip', 'sql', '7z', 'exe', 'rar', 'tar' , 'gz' , 'apk']:
                 url_t = re.findall(r'/[a-zA-Z0-9/?=&.-]+', response.text)  # 当前网页的所有可能的链接
                 for u in set(url_t):
                     if self.start_domain in u:
