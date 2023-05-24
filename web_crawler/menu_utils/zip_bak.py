@@ -7,7 +7,7 @@ from terminal_layout import *
 from menu3 import input_dest
 from filesearch import get_file_paths
 
-sys.path.append('/pythonProject3/web_crawler/')
+sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from proj_path import path_
 from utils import getCurrentTimes
 

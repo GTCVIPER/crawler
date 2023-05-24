@@ -1,11 +1,12 @@
 import sys
+import os
 
 from terminal_layout import *
 from terminal_layout.extensions.input import *
 from filesearch import get_file_paths
 from menu2 import display_list
 
-sys.path.append('/pythonProject3/web_crawler/')
+sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from proj_path import *
 
 

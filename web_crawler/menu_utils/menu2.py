@@ -7,11 +7,9 @@ import sys
 import shutil
 from menu3 import input_dest
 
-sys.path.append('/pythonProject3/web_crawler/')
-from proj_path import *
+sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+from proj_path import path_
 from utils import *
-
-
 
 
 # C:/Users/52252/Desktop
@@ -94,18 +92,22 @@ def web_display(true_path, browser_path):
 
 
 def stdio_display(true_path):
-    if true_path.rsplit('.')[-1] not in ['png', 'jpg', 'jpeg', 'gif', 'pdf', 'doc', 'ico', 'docx', 'ppt',
-                                         'pptx']:
-        with open(true_path, 'r', encoding='utf-8') as f:
+    try:
+        if true_path.rsplit('.')[-1] not in ['png', 'jpg', 'jpeg', 'gif', 'pdf', 'doc', 'ico', 'docx', 'ppt',
+                                             'pptx']:
+            with open(true_path, 'r', encoding='utf-8') as f:
+                print(f.read())
+        else:
+            with open(true_path, 'rb') as f:
+                print(f.read())
+    except:
+        with open(true_path, 'r', encoding='gbk') as f:
             print(f.read())
-    else:
-        with open(true_path, 'rb') as f:
-            print(f.read())
+
 
 def comm_display(true_path):
-    with open(true_path, 'r') as f:
-        print(f.read())
-
+    with open(true_path, 'r', encoding='utf-8') as f:
+        print(f .read())
 
 
 def write_comment(origin_name, file_name, true_path, text):

@@ -88,7 +88,7 @@ ITEM_PIPELINES = {
 # HTTPCACHE_DIR = 'httpcache'
 # HTTPCACHE_IGNORE_HTTP_CODES = []
 # HTTPCACHE_STORAGE = 'scrapy.extensions.httpcache.FilesystemCacheStorage'
-LOG_LEVEL = "INFO"  # 输出级别
+LOG_LEVEL = "ERROR"  # 输出级别
 LOG_STDOUT = False  # 是否标准输出
 # LOG_File = 'scrapy.log'
 

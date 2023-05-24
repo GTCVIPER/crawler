@@ -5,7 +5,7 @@ from terminal_layout.extensions.input import *
 import re
 # C:/Program Files (x86)/Microsoft/Edge/Application/msedge.exe
 # C:/Program Files/Google/Chrome/Application/chrome.exe
-sys.path.append('/pythonProject3/web_crawler/')
+sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from proj_path import *
 from utils import *
 
